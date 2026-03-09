@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Informatique Junior</title>
+  <style>
+    :root {
+      --violet-1: #f3e8ff;
+      --violet-2: #d8b4fe;
+      --violet-3: #a855f7;
+      --violet-4: #7e22ce;
+      --rose: #f472b6;
+      --jaune: #fde047;
+      --bleu: #60a5fa;
+      --fond: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 40%, #ddd6fe 100%);
+      --texte: #3b0764;
+      --carte: rgba(255, 255, 255, 0.82);
+      --bordure: rgba(126, 34, 206, 0.2);
+      --ok: #16a34a;
+      --ko: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+      color: var(--texte);
+      background: var(--fond);
+      overflow-x: hidden;
+    }
+
+    .bg-shape {
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(1px);
+      opacity: 0.35;
+      z-index: -1;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape-1 { width: 220px; height: 220px; background: var(--rose); top: -50px; left: -40px; }
+    .shape-2 { width: 280px; height: 280px; background: var(--bleu); bottom: -70px; right: -60px; animation-delay: 1.2s; }
+    .shape-3 { width: 170px; height: 170px; background: var(--jaune); top: 30%; right: 8%; animation-delay: 2.1s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .title {
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      animation: popin 0.7s ease;
+    }
+
+    .title h1 {
+      margin: 0;
+      color: var(--violet-4);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      text-shadow: 1px 2px 0 #ffffff;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      font-size: 1.05rem;
+    }
+
+    @keyframes popin {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .card {
+      background: var(--carte);
+      border: 2px solid var(--bordure);
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(91, 33, 182, 0.15);
+      padding: 18px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    label {
+      font-weight: 700;
+      color: var(--violet-4);
+    }
+
+    input[type="text"] {
+      border: 2px solid #c084fc;
+      border-radius: 999px;
+      padding: 10px 14px;
+      min-width: 220px;
+      font-size: 1rem;
+      outline: none;
+      background: #fff;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-main { background: #9333ea; color: #fff; }
+    .btn-alt { background: #e9d5ff; color: #5b21b6; border: 1px solid #c084fc; }
+    .btn-ok { background: #22c55e; color: #fff; }
+    .btn-ko { background: #fb7185; color: #fff; }
+    .btn-next { background: #7c3aed; color: #fff; }
+
+    .hidden { display: none; }
+
+    .top-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      background: #ede9fe;
+      border-radius: 999px;
+      padding: 8px 12px;
+      text-align: center;
+      font-weight: 700;
+      color: #5b21b6;
+    }
+
+    .question-title {
+      font-size: 1.2rem;
+      color: #4c1d95;
+      margin: 0 0 10px;
+    }
+
+    .question-box {
+      background: #f5f3ff;
+      border: 2px dashed #c084fc;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+      min-height: 72px;
+    }
+
+    .answer-box {
+      background: #faf5ff;
+      border-left: 6px solid #a855f7;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-top: 8px;
+    }
+
+    .score-anim {
+      animation: pulse 0.5s ease;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .result {
+      text-align: center;
+      padding: 20px 16px;
+    }
+
+    .star {
+      font-size: 4.5rem;
+      color: var(--jaune);
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
+      animation: twinkle 1s ease-in-out infinite alternate;
+      line-height: 1;
+    }
+
+    @keyframes twinkle {
+      from { transform: scale(1) rotate(-4deg); }
+      to { transform: scale(1.12) rotate(4deg); }
+    }
+
+    .leaderboard li {
+      margin-bottom: 6px;
+      background: #f5f3ff;
+      border-radius: 10px;
+      padding: 7px 10px;
+      list-style: none;
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 14px; }
+      .card { padding: 14px; }
+      input[type="text"] { width: 100%; min-width: 0; }
+      .row > button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
+
+  <main class="container">
+    <header class="title">
+      <h1>Quiz Informatique Junior</h1>
+      <p>100 questions amusantes pour apprendre l'informatique (CP a CM2).</p>
+    </header>
+
+    <section id="startCard" class="card">
+      <div class="row">
+        <label for="playerName">Ton prenom :</label>
+        <input id="playerName" type="text" placeholder="Ex: Lina">
+        <button id="startBtn" class="btn-main">Commencer le quiz</button>
+      </div>
+      <p>Aucun chrono: tu peux reflechir et meme chercher sur le web avant d'afficher la reponse.</p>
+    </section>
+
+    <section id="quizCard" class="card hidden">
+      <div class="top-info">
+        <div class="pill" id="progressText">Question 1 / 100</div>
+        <div class="pill" id="levelText">Niveau</div>
+        <div class="pill" id="scoreText">Score: 0 / 100</div>
+      </div>
+
+      <h2 class="question-title" id="themeText"></h2>
+      <div class="question-box" id="questionText"></div>
+
+      <div class="row">
+        <button id="webBtn" class="btn-alt">Chercher sur le web</button>
+        <button id="showAnswerBtn" class="btn-main">Afficher la reponse</button>
+      </div>
+
+      <div id="answerWrap" class="answer-box hidden">
+        <p><strong>Reponse:</strong> <span id="answerText"></span></p>
+        <p><strong>Explication:</strong> <span id="explainText"></span></p>
+      </div>
+
+      <div id="scoreButtons" class="row hidden">
+        <button id="goodBtn" class="btn-ok">J'ai trouve (+1)</button>
+        <button id="badBtn" class="btn-ko">Je me suis trompe</button>
+      </div>
+
+      <div class="row" style="margin-top: 10px;">
+        <button id="nextBtn" class="btn-next" disabled>Question suivante</button>
+      </div>
+    </section>
+
+    <section id="resultCard" class="card result hidden">
+      <div class="star">★</div>
+      <h2 id="finalTitle">Bravo !</h2>
+      <p id="finalScore"></p>
+      <p id="winnerText"></p>
+      <button id="restartBtn" class="btn-main">Rejouer</button>
+    </section>
+
+    <section id="leaderboardCard" class="card hidden">
+      <h3>Classement local (meilleurs scores)</h3>
+      <ul id="leaderboardList" class="leaderboard"></ul>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un ordinateur ?", reponse: "Une machine qui aide a apprendre, jouer et travailler.", explication: "Comme une boite magique qui suit des instructions.", search: "definition ordinateur enfant" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "A quoi sert un ordinateur ?", reponse: "A ecrire, dessiner, chercher et communiquer.", explication: "On peut faire beaucoup d'activites avec lui.", search: "a quoi sert un ordinateur" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Comment allume-t-on un ordinateur ?", reponse: "En appuyant sur le bouton d'alimentation.", explication: "Le systeme demarre, comme quand on allume une lampe.", search: "comment allumer un ordinateur" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un ecran ?", reponse: "La partie qui montre images et texte.", explication: "C'est la fenetre de l'ordinateur.", search: "ecran ordinateur definition" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "A quoi sert le clavier ?", reponse: "A taper des lettres et des chiffres.", explication: "Chaque touche ecrit un caractere.", search: "clavier ordinateur pour enfant" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "A quoi sert la souris ?", reponse: "A deplacer le curseur et cliquer.", explication: "Elle aide a choisir des choses a l'ecran.", search: "souris informatique enfant" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un clic ?", reponse: "Appuyer une fois sur la souris.", explication: "Un clic sert souvent a selectionner.", search: "c est quoi un clic" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un double-clic ?", reponse: "Cliquer deux fois rapidement.", explication: "Souvent, cela ouvre un fichier ou une application.", search: "double clic definition" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un ordinateur portable ?", reponse: "Un ordinateur qu'on peut transporter.", explication: "Il fonctionne avec une batterie.", search: "ordinateur portable enfant" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'une tablette ?", reponse: "Un petit ordinateur tactile.", explication: "On l'utilise avec les doigts.", search: "tablette tactile definition" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'un casque audio ?", reponse: "Un objet pour ecouter le son.", explication: "Il envoie le son dans tes oreilles.", search: "casque audio ordinateur" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'une webcam ?", reponse: "Une camera pour filmer sur l'ordinateur.", explication: "Elle sert pour les appels video.", search: "webcam c est quoi" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Qu'est-ce qu'une imprimante ?", reponse: "Une machine qui imprime sur papier.", explication: "Elle transforme un fichier numerique en feuille.", search: "imprimante definition enfant" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Pourquoi eteindre correctement l'ordinateur ?", reponse: "Pour proteger les fichiers.", explication: "Sinon, on peut perdre des donnees.", search: "eteindre ordinateur correctement" },
+      { level: "CP / CE1", theme: "Bases de l'ordinateur", question: "Que montre le curseur a l'ecran ?", reponse: "Ou la souris pointe.", explication: "C'est comme un petit doigt qui montre.", search: "curseur souris ecran" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'un fichier ?", reponse: "Un document dans l'ordinateur.", explication: "Ca peut etre une image, un texte ou une video.", search: "fichier informatique definition" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'un dossier ?", reponse: "Un endroit pour ranger des fichiers.", explication: "Comme un classeur a l'ecole.", search: "dossier informatique enfant" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Pourquoi ranger ses fichiers ?", reponse: "Pour les retrouver vite.", explication: "Sinon, tout est melange.", search: "pourquoi organiser ses fichiers" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'une image numerique ?", reponse: "Une photo ou un dessin dans l'ordinateur.", explication: "Elle est formee de petits points appeles pixels.", search: "image numerique pixel" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'une video ?", reponse: "Une suite d'images qui bougent.", explication: "Beaucoup d'images rapides donnent l'impression du mouvement.", search: "video suite d images" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'un document texte ?", reponse: "Un fichier pour ecrire.", explication: "Par exemple une histoire ou une lettre.", search: "document texte definition" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Que veut dire sauvegarder ?", reponse: "Enregistrer son travail.", explication: "Ca evite de tout perdre.", search: "sauvegarder definition" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Pourquoi sauvegarder souvent ?", reponse: "Pour ne pas perdre son travail.", explication: "Une panne peut arriver a tout moment.", search: "pourquoi sauvegarder souvent" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'une cle USB ?", reponse: "Un petit objet pour transporter des fichiers.", explication: "On la branche sur l'ordinateur.", search: "cle USB pour enfant" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Que veut dire copier un fichier ?", reponse: "Faire une deuxieme version.", explication: "L'original reste en place.", search: "copier fichier definition" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Que veut dire deplacer un fichier ?", reponse: "Le mettre dans un autre dossier.", explication: "Comme changer un livre d'etagere.", search: "deplacer fichier" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Que veut dire supprimer un fichier ?", reponse: "L'effacer.", explication: "Il va d'abord dans la corbeille.", search: "supprimer fichier corbeille" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Qu'est-ce que la corbeille ?", reponse: "Un endroit pour les fichiers supprimes.", explication: "On peut parfois les recuperer.", search: "corbeille ordinateur" },
+      { level: "CP / CE1", theme: "Fichiers et dossiers", question: "Pourquoi renommer un fichier ?", reponse: "Pour mieux le reconnaitre.", explication: "Un bon nom aide a le retrouver.", search: "renommer fichier" },
+      { level: "CP / CE1", theme: "Internet et securite", question: "Qu'est-ce qu'Internet ?", reponse: "Un grand reseau d'ordinateurs.", explication: "Ils peuvent parler entre eux partout dans le monde.", search: "internet definition enfant" },
+      { level: "CP / CE1", theme: "Internet et securite", question: "A quoi sert Internet ?", reponse: "A chercher des infos et communiquer.", explication: "On peut aussi regarder des videos et jouer.", search: "a quoi sert internet" },
+      { level: "CP / CE1", theme: "Internet et securite", question: "Qu'est-ce qu'un site web ?", reponse: "Une page sur Internet.", explication: "Comme une page d'un livre geant.", search: "site web definition" },
+      { level: "CP / CE1", theme: "Internet et securite", question: "Qu'est-ce qu'un navigateur ?", reponse: "Un programme pour visiter des sites.", explication: "Exemples: Chrome, Firefox, Safari.", search: "navigateur web definition" },
+
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un moteur de recherche ?", reponse: "Un outil qui trouve des pages web.", explication: "Tu ecris une question et il propose des reponses.", search: "moteur de recherche enfant" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Pourquoi verifier les informations ?", reponse: "Parce que tout n'est pas toujours vrai.", explication: "Comparer plusieurs sources aide a mieux comprendre.", search: "verifier information internet" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un lien ?", reponse: "Un texte ou bouton qui ouvre une autre page.", explication: "Un clic et tu changes de page.", search: "lien hypertexte definition" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un email ?", reponse: "Un message envoye par Internet.", explication: "Il arrive souvent tres vite.", search: "email definition enfant" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un mot de passe ?", reponse: "Un code secret.", explication: "Il protege ton compte, comme une cle.", search: "mot de passe definition" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Pourquoi garder son mot de passe secret ?", reponse: "Pour proteger ses informations.", explication: "Si quelqu'un le connait, il peut entrer a ta place.", search: "pourquoi garder mot de passe secret" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un pseudo ?", reponse: "Un nom utilise en ligne.", explication: "Il permet de ne pas montrer son vrai nom partout.", search: "pseudo internet" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Pourquoi eviter de parler aux inconnus en ligne ?", reponse: "Pour rester en securite.", explication: "On ne sait pas toujours qui se cache derriere l'ecran.", search: "securite enfant internet inconnus" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un telechargement ?", reponse: "Prendre un fichier depuis Internet.", explication: "Le fichier arrive sur ton appareil.", search: "telechargement definition" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un virus informatique ?", reponse: "Un programme dangereux.", explication: "Il peut ralentir ou abimer l'ordinateur.", search: "virus informatique enfant" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Comment proteger son ordinateur ?", reponse: "Avec antivirus et mises a jour.", explication: "Ces outils bloquent beaucoup de dangers.", search: "proteger ordinateur antivirus" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Pourquoi ne pas cliquer sur tous les liens ?", reponse: "Certains peuvent etre pieges.", explication: "Mieux vaut verifier avant de cliquer.", search: "lien suspect internet" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Qu'est-ce qu'un compte utilisateur ?", reponse: "Ton espace personnel sur un service.", explication: "Il contient tes infos et tes reglages.", search: "compte utilisateur definition" },
+      { level: "CE2 / CM1", theme: "Internet et securite", question: "Pourquoi demander a un adulte avant une inscription ?", reponse: "Pour verifier si le site est sur.", explication: "Un adulte t'aide a proteger tes donnees.", search: "enfant inscription internet adulte" },
+      { level: "CE2 / CM1", theme: "Bons comportements numeriques", question: "Pourquoi etre poli sur Internet ?", reponse: "Parce qu'il y a de vraies personnes.", explication: "Les mots peuvent faire plaisir ou blesser.", search: "respect sur internet enfant" },
+      { level: "CE2 / CM1", theme: "Bons comportements numeriques", question: "Que faire si un message fait peur ?", reponse: "En parler a un adulte.", explication: "Ne reste pas seul avec un probleme en ligne.", search: "message inquietant internet enfant" },
+      { level: "CE2 / CM1", theme: "Bons comportements numeriques", question: "Pourquoi faire des pauses d'ecran ?", reponse: "Pour reposer yeux et corps.", explication: "Bouger aide a rester en forme.", search: "pause ecran enfant" },
+      { level: "CE2 / CM1", theme: "Bons comportements numeriques", question: "Qu'est-ce qu'une mise a jour ?", reponse: "Une amelioration d'un logiciel.", explication: "Elle corrige des bugs et ajoute parfois des fonctions.", search: "mise a jour logiciel definition" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un programme ?", reponse: "Une suite d'instructions.", explication: "Comme une recette que l'ordinateur suit.", search: "programme informatique enfant" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un logiciel ?", reponse: "Un programme qu'on utilise.", explication: "Par exemple un jeu ou un traitement de texte.", search: "logiciel definition" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce que coder ?", reponse: "Ecrire des instructions pour l'ordinateur.", explication: "On utilise un langage special.", search: "coder pour enfant" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Pourquoi les ordinateurs utilisent des nombres ?", reponse: "Parce qu'ils calculent tout.", explication: "Texte, images et sons sont traduits en donnees.", search: "ordinateur nombres donnees" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce que la memoire vive (RAM) ?", reponse: "Une memoire rapide temporaire.", explication: "Elle garde ce qui sert tout de suite.", search: "RAM memoire vive enfant" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un processeur ?", reponse: "Le cerveau de l'ordinateur.", explication: "Il fait les calculs tres vite.", search: "processeur definition" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Pourquoi certains ordinateurs sont plus rapides ?", reponse: "Parce qu'ils ont des pieces plus puissantes.", explication: "Processeur, memoire et stockage jouent ensemble.", search: "ordinateur plus rapide pourquoi" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un pixel ?", reponse: "Un petit point d'image.", explication: "Beaucoup de pixels forment une photo.", search: "pixel definition" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce que le stockage ?", reponse: "L'endroit ou les fichiers sont gardes.", explication: "Disque dur ou SSD, comme une grande armoire.", search: "stockage disque dur ssd" },
+      { level: "CE2 / CM1", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un systeme d'exploitation ?", reponse: "Le logiciel principal de l'appareil.", explication: "Il gere les applications et le materiel.", search: "systeme d exploitation enfant" },
+      { level: "CE2 / CM1", theme: "Bases de la programmation", question: "Qu'est-ce qu'un algorithme ?", reponse: "Une suite d'etapes pour resoudre un probleme.", explication: "Comme une recette de gateau, etape par etape.", search: "algorithme definition enfant" },
+      { level: "CE2 / CM1", theme: "Bases de la programmation", question: "Que veut dire deboguer ?", reponse: "Chercher et corriger des erreurs.", explication: "On retire les bugs pour que ca marche.", search: "debugger programme" },
+      { level: "CE2 / CM1", theme: "Bases de la programmation", question: "Qu'est-ce qu'une boucle en programmation ?", reponse: "Répeter une action plusieurs fois.", explication: "Comme dire 10 fois saute !", search: "boucle programmation enfant" },
+      { level: "CE2 / CM1", theme: "Bases de la programmation", question: "Qu'est-ce qu'une condition (si...alors) ?", reponse: "Une regle qui choisit quoi faire.", explication: "Si il pleut, alors je prends un parapluie.", search: "condition si alors programmation" },
+      { level: "CE2 / CM1", theme: "Bases de la programmation", question: "Pourquoi tester un programme ?", reponse: "Pour verifier qu'il fonctionne bien.", explication: "Les tests trouvent les erreurs avant les utilisateurs.", search: "pourquoi tester un programme" },
+      { level: "CE2 / CM1", theme: "Creativite numerique", question: "Peut-on dessiner avec un ordinateur ?", reponse: "Oui, avec des logiciels de dessin.", explication: "Tu peux colorier, gommer et recommencer facilement.", search: "dessin numerique enfant" },
+      { level: "CE2 / CM1", theme: "Creativite numerique", question: "Peut-on faire de la musique avec un ordinateur ?", reponse: "Oui.", explication: "Des logiciels aident a creer des rythmes et melodies.", search: "musique sur ordinateur enfant" },
+      { level: "CE2 / CM1", theme: "Creativite numerique", question: "Peut-on apprendre avec un ordinateur ?", reponse: "Oui.", explication: "Il existe des jeux et sites educatifs.", search: "apprendre informatique enfant" },
+      { level: "CE2 / CM1", theme: "Creativite numerique", question: "Peut-on travailler en equipe sur Internet ?", reponse: "Oui, en partageant des documents.", explication: "Chacun peut ajouter sa partie.", search: "travail collaboratif documents" },
+      { level: "CE2 / CM1", theme: "Creativite numerique", question: "Qu'est-ce que partager un fichier ?", reponse: "Donner acces a une autre personne.", explication: "Elle peut parfois lire ou modifier le document.", search: "partager un fichier" },
+
+      { level: "CM2", theme: "Logiciels et programmes", question: "Quelle difference entre materiel et logiciel ?", reponse: "Materiel = objets physiques, logiciel = programmes.", explication: "Le clavier se touche, l'application non.", search: "materiel logiciel difference" },
+      { level: "CM2", theme: "Logiciels et programmes", question: "Qu'est-ce qu'un fichier .pdf ?", reponse: "Un format de document.", explication: "Il garde la meme mise en page sur presque tous les appareils.", search: "format pdf definition" },
+      { level: "CM2", theme: "Logiciels et programmes", question: "A quoi sert un fichier .zip ?", reponse: "A compresser plusieurs fichiers.", explication: "Comme mettre des affaires dans une valise plus petite.", search: "fichier zip definition" },
+      { level: "CM2", theme: "Logiciels et programmes", question: "Pourquoi faire une sauvegarde en ligne (cloud) ?", reponse: "Pour garder une copie sur Internet.", explication: "Si l'ordinateur casse, les fichiers peuvent rester accessibles.", search: "sauvegarde cloud enfant" },
+      { level: "CM2", theme: "Logiciels et programmes", question: "Peut-on utiliser un ordinateur sans Internet ?", reponse: "Oui, beaucoup d'applications fonctionnent hors ligne.", explication: "Internet est utile, mais pas obligatoire pour tout.", search: "ordinateur sans internet" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce qu'une adresse URL ?", reponse: "L'adresse d'une page web.", explication: "Comme l'adresse d'une maison sur Internet.", search: "url definition" },
+      { level: "CM2", theme: "Internet et securite", question: "Que veut dire https dans une adresse ?", reponse: "Connexion securisee.", explication: "Les donnees sont mieux protegees pendant l'envoi.", search: "https signification" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce que le phishing ?", reponse: "Une arnaque pour voler des infos.", explication: "Un faux message peut imiter une vraie entreprise.", search: "phishing pour enfant" },
+      { level: "CM2", theme: "Internet et securite", question: "Comment reconnaitre une arnaque en ligne ?", reponse: "Message urgent, fautes, lien suspect.", explication: "Il faut verifier l'expediteur et demander a un adulte.", search: "reconnaitre arnaque internet" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce que les donnees personnelles ?", reponse: "Des infos sur toi.", explication: "Nom, photo, adresse: il faut les proteger.", search: "donnees personnelles enfant" },
+      { level: "CM2", theme: "Internet et securite", question: "Pourquoi ne pas publier son adresse en ligne ?", reponse: "Pour rester en securite.", explication: "Certaines infos doivent rester privees.", search: "securite adresse internet" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce qu'une empreinte numerique ?", reponse: "Les traces qu'on laisse en ligne.", explication: "Messages, likes, photos peuvent rester longtemps.", search: "empreinte numerique definition" },
+      { level: "CM2", theme: "Internet et securite", question: "Pourquoi demander l'autorisation avant de publier une photo d'un ami ?", reponse: "Par respect et pour sa vie privee.", explication: "Tout le monde doit choisir ce qu'il partage.", search: "autorisation publier photo" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Que faire en cas de cyberharcelement ?", reponse: "Garder des preuves et en parler a un adulte.", explication: "On peut aussi bloquer et signaler le compte.", search: "cyberharcelement enfant que faire" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Pourquoi respecter le droit d'auteur ?", reponse: "Parce que les creations appartiennent a leurs auteurs.", explication: "On peut demander l'autorisation ou citer la source.", search: "droit auteur enfant" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Que veut dire citer sa source ?", reponse: "Dire d'ou vient l'information.", explication: "C'est honnete et ca aide a verifier.", search: "citer ses sources" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Pourquoi lire les regles d'un jeu en ligne ?", reponse: "Pour jouer correctement et en securite.", explication: "Les regles expliquent les limites et comportements attendus.", search: "regles jeu en ligne securite" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'une variable ?", reponse: "Une boite qui garde une information.", explication: "On peut changer ce qu'il y a dans la boite.", search: "variable programmation enfant" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'une fonction ?", reponse: "Un petit bloc d'instructions reutilisable.", explication: "Comme un mini robot qu'on appelle quand on veut.", search: "fonction programmation enfant" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'un langage de programmation ?", reponse: "Une facon d'ecrire des instructions.", explication: "Exemples: Scratch, Python, JavaScript.", search: "langage programmation definition" },
+      { level: "CM2", theme: "Bases de la programmation", question: "A quoi sert Scratch ?", reponse: "A programmer avec des blocs.", explication: "C'est ideal pour debuter sans taper beaucoup de texte.", search: "Scratch pour enfant" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Que fait l'instruction " + '"si"' + " en code ?", reponse: "Elle prend une decision.", explication: "Si une condition est vraie, alors on fait une action.", search: "instruction si programmation" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Que fait une boucle " + '"repeter"' + " ?", reponse: "Elle rejoue une action plusieurs fois.", explication: "Tres pratique pour eviter de recopier les memes lignes.", search: "boucle repeter scratch" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'un bug ?", reponse: "Une erreur dans le programme.", explication: "Le logiciel ne fait pas ce qu'on attend.", search: "bug informatique definition" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'un test en programmation ?", reponse: "Une verification du resultat.", explication: "On controle si le code marche dans plusieurs cas.", search: "tests programmation" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Pourquoi commenter son code ?", reponse: "Pour mieux l'expliquer.", explication: "Les commentaires aident les autres et ton futur toi.", search: "commentaires code utilite" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce qu'un robot ?", reponse: "Une machine programmee.", explication: "Il suit des instructions, comme un code.", search: "robot definition enfant" },
+      { level: "CM2", theme: "Bases de la programmation", question: "Qu'est-ce que l'intelligence artificielle ?", reponse: "Un programme capable d'apprendre avec des donnees.", explication: "Il reconnait des modeles pour aider a resoudre des taches.", search: "intelligence artificielle enfant" },
+      { level: "CM2", theme: "Creativite numerique", question: "Peut-on creer un jeu video ?", reponse: "Oui, avec des outils de programmation.", explication: "On combine graphismes, regles et interactions.", search: "creer jeu video enfant" },
+      { level: "CM2", theme: "Creativite numerique", question: "Pourquoi apprendre a coder ?", reponse: "Pour comprendre et creer la technologie.", explication: "Tu passes de joueur a createur.", search: "pourquoi apprendre a coder" },
+      { level: "CM2", theme: "Creativite numerique", question: "Qu'est-ce que la creativite numerique ?", reponse: "Creer avec les outils informatiques.", explication: "Dessin, animation, musique, video, jeu.", search: "creativite numerique definition" },
+      { level: "CM2", theme: "Creativite numerique", question: "Quel metier peut-on faire en informatique ?", reponse: "Developpeur, ingenieur, designer, technicien...", explication: "L'informatique ouvre beaucoup de metiers differents.", search: "metiers informatique enfant" },
+      { level: "CM2", theme: "Creativite numerique", question: "Pourquoi l'informatique est importante aujourd'hui ?", reponse: "Elle est partout dans la vie quotidienne.", explication: "Ecole, sante, transports, jeux, communication.", search: "importance informatique" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'un format de fichier ?", reponse: "La facon dont un fichier est organise.", explication: "Par exemple .jpg, .mp3, .docx.", search: "format de fichier" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Pourquoi trier ses dossiers par theme ?", reponse: "Pour retrouver plus vite.", explication: "Comme ranger les livres par matiere.", search: "organiser dossiers informatique" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'une version d'un document ?", reponse: "Une etape differente du meme travail.", explication: "Cela permet de revenir en arriere si besoin.", search: "version document" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Pourquoi nommer un fichier avec une date ?", reponse: "Pour savoir quand il a ete cree.", explication: "Exemple: expose_sciences_2026-03-09.", search: "nommer fichier avec date" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Qu'est-ce qu'une extension de fichier ?", reponse: "Les lettres apres le point dans le nom.", explication: "Elles indiquent le type du fichier.", search: "extension de fichier definition" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Que faire avant de supprimer un fichier ?", reponse: "Verifier qu'il n'est plus utile.", explication: "Mieux vaut reflechir avant d'effacer.", search: "supprimer fichier prudence" },
+      { level: "CM2", theme: "Fichiers et dossiers", question: "Pourquoi faire des copies de securite ?", reponse: "Pour ne pas perdre ses donnees.", explication: "Une copie sur un autre support est rassurante.", search: "copie de securite fichier" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce qu'un reseau Wi-Fi ?", reponse: "Une connexion Internet sans fil.", explication: "Ton appareil se connecte sans cable.", search: "wifi definition enfant" },
+      { level: "CM2", theme: "Internet et securite", question: "Pourquoi proteger son Wi-Fi avec un mot de passe ?", reponse: "Pour limiter les acces inconnus.", explication: "Sans mot de passe, n'importe qui peut se connecter.", search: "securiser wifi mot de passe" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce qu'un serveur ?", reponse: "Un ordinateur qui fournit des services.", explication: "Il envoie les pages web aux autres appareils.", search: "serveur informatique enfant" },
+      { level: "CM2", theme: "Internet et securite", question: "Qu'est-ce qu'un navigateur prive ?", reponse: "Un mode qui garde moins d'historique local.", explication: "Il n'est pas magique: le reseau peut toujours voir certaines choses.", search: "navigation privee explication" },
+      { level: "CM2", theme: "Internet et securite", question: "Pourquoi demander la permission avant d'installer une appli ?", reponse: "Pour verifier qu'elle est sure et utile.", explication: "Certaines applis demandent trop d'autorisations.", search: "installer application securite" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Qu'est-ce qu'une regle de netiquette ?", reponse: "Une regle de politesse sur Internet.", explication: "Comme en classe, on respecte les autres.", search: "netiquette definition" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Pourquoi ne pas envoyer un message quand on est en colere ?", reponse: "Parce qu'on peut blesser.", explication: "Mieux vaut respirer et relire avant d'envoyer.", search: "communication bienveillante internet" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Comment reagir si on voit une insulte en ligne ?", reponse: "Ne pas repondre violemment et prevenir un adulte.", explication: "On peut aussi signaler le contenu.", search: "signaler insulte en ligne" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Pourquoi equilibrer ecrans et activites dehors ?", reponse: "Pour rester en bonne sante.", explication: "Le cerveau aime aussi bouger, lire et jouer dehors.", search: "equilibre temps ecran enfant" },
+      { level: "CM2", theme: "Bons comportements numeriques", question: "Qu'est-ce qu'un comportement responsable en ligne ?", reponse: "Reflechir avant de cliquer, publier ou partager.", explication: "Un bon citoyen numerique protege soi et les autres.", search: "citoyen numerique enfant" }
+    ].slice(0, 100);
+
+    if (questions.length !== 100) {
+      console.error("Le quiz doit contenir exactement 100 questions.");
+    }
+
+    const startCard = document.getElementById("startCard");
+    const quizCard = document.getElementById("quizCard");
+    const resultCard = document.getElementById("resultCard");
+    const leaderboardCard = document.getElementById("leaderboardCard");
+
+    const playerNameInput = document.getElementById("playerName");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    const progressText = document.getElementById("progressText");
+    const levelText = document.getElementById("levelText");
+    const scoreText = document.getElementById("scoreText");
+    const themeText = document.getElementById("themeText");
+    const questionText = document.getElementById("questionText");
+
+    const webBtn = document.getElementById("webBtn");
+    const showAnswerBtn = document.getElementById("showAnswerBtn");
+    const answerWrap = document.getElementById("answerWrap");
+    const answerText = document.getElementById("answerText");
+    const explainText = document.getElementById("explainText");
+
+    const scoreButtons = document.getElementById("scoreButtons");
+    const goodBtn = document.getElementById("goodBtn");
+    const badBtn = document.getElementById("badBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const finalTitle = document.getElementById("finalTitle");
+    const finalScore = document.getElementById("finalScore");
+    const winnerText = document.getElementById("winnerText");
+    const leaderboardList = document.getElementById("leaderboardList");
+
+    let playerName = "Joueur";
+    let currentIndex = 0;
+    let score = 0;
+    let answeredCurrent = false;
+
+    function saveScore(name, value) {
+      const key = "quiz-informatique-scores";
+      const list = JSON.parse(localStorage.getItem(key) || "[]");
+      list.push({ name, score: value, date: new Date().toISOString().slice(0, 10) });
+      list.sort((a, b) => b.score - a.score);
+      localStorage.setItem(key, JSON.stringify(list.slice(0, 10)));
+    }
+
+    function getScores() {
+      return JSON.parse(localStorage.getItem("quiz-informatique-scores") || "[]");
+    }
+
+    function renderLeaderboard() {
+      const scores = getScores();
+      leaderboardList.innerHTML = "";
+      if (!scores.length) {
+        leaderboardList.innerHTML = "<li>Aucun score pour le moment.</li>";
+        return;
+      }
+      scores.slice(0, 5).forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.textContent = `${idx + 1}. ${item.name} - ${item.score}/100 (${item.date})`;
+        leaderboardList.appendChild(li);
+      });
+    }
+
+    function updateHeader() {
+      progressText.textContent = `Question ${currentIndex + 1} / 100`;
+      levelText.textContent = questions[currentIndex].level;
+      scoreText.textContent = `Score: ${score} / 100`;
+      scoreText.classList.remove("score-anim");
+      void scoreText.offsetWidth;
+      scoreText.classList.add("score-anim");
+    }
+
+    function showQuestion() {
+      const q = questions[currentIndex];
+      themeText.textContent = `Theme: ${q.theme}`;
+      questionText.textContent = q.question;
+      answerText.textContent = q.reponse;
+      explainText.textContent = q.explication;
+      answerWrap.classList.add("hidden");
+      scoreButtons.classList.add("hidden");
+      nextBtn.disabled = true;
+      answeredCurrent = false;
+      updateHeader();
+    }
+
+    function startQuiz() {
+      playerName = (playerNameInput.value || "Joueur").trim();
+      currentIndex = 0;
+      score = 0;
+      answeredCurrent = false;
+
+      startCard.classList.add("hidden");
+      resultCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      leaderboardCard.classList.remove("hidden");
+
+      showQuestion();
+      renderLeaderboard();
+    }
+
+    function markAnswer(isGood) {
+      if (answeredCurrent) return;
+      answeredCurrent = true;
+      if (isGood) score += 1;
+      updateHeader();
+      nextBtn.disabled = false;
+      goodBtn.disabled = true;
+      badBtn.disabled = true;
+    }
+
+    function nextQuestion() {
+      if (currentIndex < questions.length - 1) {
+        currentIndex += 1;
+        goodBtn.disabled = false;
+        badBtn.disabled = false;
+        showQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+
+    function endQuiz() {
+      saveScore(playerName, score);
+      const scores = getScores();
+      const best = scores.length ? scores[0] : null;
+
+      quizCard.classList.add("hidden");
+      resultCard.classList.remove("hidden");
+      leaderboardCard.classList.remove("hidden");
+
+      finalTitle.textContent = `Bravo ${playerName} !`;
+      finalScore.textContent = `Ton score final est ${score} / 100.`;
+      if (best && best.name === playerName && best.score === score) {
+        winnerText.textContent = "Tu es en tete du classement local pour l'instant !";
+      } else if (best) {
+        winnerText.textContent = `Meilleur score actuel: ${best.name} avec ${best.score}/100.`;
+      } else {
+        winnerText.textContent = "Premier score enregistre !";
+      }
+      renderLeaderboard();
+    }
+
+    startBtn.addEventListener("click", startQuiz);
+    restartBtn.addEventListener("click", () => {
+      resultCard.classList.add("hidden");
+      startCard.classList.remove("hidden");
+      leaderboardCard.classList.remove("hidden");
+      renderLeaderboard();
+    });
+
+    showAnswerBtn.addEventListener("click", () => {
+      answerWrap.classList.remove("hidden");
+      scoreButtons.classList.remove("hidden");
+    });
+
+    webBtn.addEventListener("click", () => {
+      const q = questions[currentIndex];
+      const query = encodeURIComponent(`${q.question} ${q.search}`);
+      window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+    });
+
+    goodBtn.addEventListener("click", () => markAnswer(true));
+    badBtn.addEventListener("click", () => markAnswer(false));
+    nextBtn.addEventListener("click", nextQuestion);
+
+    renderLeaderboard();
+  </script>
+</body>
+</html>
